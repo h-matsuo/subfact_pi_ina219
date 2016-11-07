@@ -20,7 +20,8 @@ class Adafruit_I2C :
     except:
       return 0
  
-  def __init__(self, address, bus=smbus.SMBus(1 if getPiRevision() > 1 else 0), debug=False):
+  #def __init__(self, address, bus=smbus.SMBus(1 if getPiRevision() > 1 else 0), debug=False):
+  def __init__(self, address, bus=smbus.SMBus(1), debug=False):
     self.address = address
 	# By default, the correct I2C bus is auto-detected using /proc/cpuinfo
     self.bus = bus

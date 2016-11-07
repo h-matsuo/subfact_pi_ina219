@@ -128,6 +128,88 @@ class INA219:
 		bytes = [(config >> 8) & 0xFF, config & 0xFF]
 		self.i2c.writeList(self.__INA219_REG_CONFIG, bytes)
 
+	# Calibration for measuring Raspberry Pi 3 Model B.
+	# NOTE: Supply power to RasPi *through the GPIO headder*.
+	def ina219SetCalibration_RasPi3ModelB(self):
+		# VBUS_MAX = 16			(Assumes 16 V, can also be set to 32 V)
+		# VSHUNT_MAX = 0.32		(Assumes Gain 8, 320 mV, can also be 0.16, 0.08, 0.04)
+		# RSHUNT = 0.1			(Register value in ohms)
+
+		# 1. Determine max possible current
+		# MaxPossible_I = VSHUNT_MAX / RSHUNT
+		# MaxPossible_I = 3.2 A
+
+		# 2. Determine max expected current
+		# MaxExpected_I = 2.5 A
+
+		# 3. Calculate possible range of LSBs (Min = 15-bit, Max = 12-bit)
+		# MinimumLSB = MaxExpected_I / 32767
+		# MinimumLSB = 0.0000763	(76 uA per bit)
+		# MaximumLSB = MaxExpected_I / 4096
+		# MaximumLSB = 0.0000610	(610 uA per bit)
+
+		# 4. Choose an LSB between the min and max values
+		#    (Preferably a roundish number close to MinimumLSB)
+		# CurrentLSB = 0.00008		(80 uA per bit)
+
+		# 5. Compute the calibration register
+		# Cal = trunc (0.04096 / (CurrentLSB * RSHUNT))
+		# Cal = 5120 (0x1400)
+
+		# ina219_calValue = 5120;
+
+		# 6. Calculate the power LSB
+		# PowerLSB = 20 * CurrentLSB
+		# PowerLSB = 0.0016	(1.6 mW per bit)
+
+		# 7. Compute the maximum current and shunt voltage values before overflow
+
+		# MaxCurrent = CurrentLSB * 32767
+		# MaxCurrent = 2.62136 A before overflow
+
+		# If MaxCurrent > MaxPossible_I then
+		#     MaxCurrent_Before_Overflow = MaxPossible_I
+		# Else
+		#     MaxCurrent_Before_Overflow = MaxCurrent
+
+		# EndIf
+
+		# MaxCurrent_Before_Overflow = MaxCurrent
+		# MaxCurrent_Before_Overflow =  2.62136 A
+
+		# MaxShuntVoltage = MaxCurrent_Before_Overflow * RSHUNT
+		# MaxShuntVoltage = 0.262136 V
+
+		# If MaxShuntVoltage >= VSHUNT_MAX
+		#     MaxShuntVoltage_Before_Overflow = VSHUNT_MAX
+		# Else
+		#     MaxShuntVoltage_Before_Overflow = MaxShuntVoltage
+		# End If
+
+		# MaxShuntVoltage_Before_Overflow = MaxShuntVoltage
+		# MaxShuntVoltage_Before_Overflow = 0.262136 V
+
+		# 8. Compute the maximum power
+		# MaximumPower = MaxCurrent_Before_Overflow * VBUS_MAX
+		# MaximumPower = 41.9 W
+
+		# Set multipliers to convert raw current/power values
+		self.ina219_currentDivider_mA = 12.5	# CurrentLSB = 80 uA per bit (1000 / 80 = 12.5)
+		self.ina219_powerDivider_mW = 1.6		# PowerLSB = 1.6 mW per bit
+
+		# Set calibration register to 'Cal' calcurated above
+		bytes = [(0x1400 >> 8) & 0xFF, 0x1400 & 0xFF]
+		self.i2c.writeList(self.__INA219_REG_CALIBRATION, bytes)
+
+		# Set Config register to take into account the settings above
+		config = self.__INA219_CONFIG_BVOLTAGERANGE_16V | \
+				 self.__INA219_CONFIG_GAIN_8_320MV | \
+				 self.__INA219_CONFIG_BADCRES_12BIT | \
+				 self.__INA219_CONFIG_SADCRES_12BIT_1S_532US | \
+				 self.__INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS
+		bytes = [(config >> 8) & 0xFF, config & 0xFF]
+		self.i2c.writeList(self.__INA219_REG_CONFIG, bytes)
+
 	def getBusVoltage_raw(self):
 		result = self.i2c.readU16(self.__INA219_REG_BUSVOLTAGE)
 		
