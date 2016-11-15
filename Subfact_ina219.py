@@ -1,9 +1,11 @@
 #!/usr/bin/python
 
-import time
-import smbus
-from Adafruit_I2C import Adafruit_I2C
+#import time
+#import smbus
+import random
+#from Adafruit_I2C import Adafruit_I2C
 
+"""
 # ===========================================================================
 # INA219 Class
 # ===========================================================================
@@ -243,20 +245,31 @@ class INA219:
 		else:
 			return (result[0] << 8) | (result[1])
 
+"""
+
+class INA219:
+
+	def ina219SetCalibration_RasPi3ModelB(self):
+		self.tmp = 10
+
 	def getShuntVoltage_mV(self):
-		value = self.getShuntVoltage_raw()
-		return value * 0.01
+		#value = self.getShuntVoltage_raw()
+		#return value * 0.01
+		return random.uniform(20,40)
 		
 	def getBusVoltage_V(self):
-		value = self.getBusVoltage_raw()
-		return value * 0.001
-		
+		#value = self.getBusVoltage_raw()
+		#return value * 0.001
+		return random.uniform(0.5,1.5)
+
 	def getCurrent_mA(self):
-		valueDec = self.getCurrent_raw()
-		valueDec /= self.ina219_currentDivider_mA
-		return valueDec
+		#valueDec = self.getCurrent_raw()
+		#valueDec /= self.ina219_currentDivider_mA
+		#return valueDec
+		return random.uniform(200,350)
 		
 	def getPower_mW(self):
-		valueDec = self.getPower_raw()
-		valueDec /= self.ina219_powerDivider_mW
-		return valueDec
+		#valueDec = self.getPower_raw()
+		#valueDec /= self.ina219_powerDivider_mW
+		#return valueDec
+		return random.uniform(80,200)
