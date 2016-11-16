@@ -157,7 +157,7 @@ class INA219:
 		# Cal = trunc (0.04096 / (CurrentLSB * RSHUNT))
 		# Cal = 5120 (0x1400)
 
-		# ina219_calValue = 5120;
+		self.ina219_calValue = 5120;
 
 		# 6. Calculate the power LSB
 		# PowerLSB = 20 * CurrentLSB
