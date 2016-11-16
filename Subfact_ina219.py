@@ -111,11 +111,12 @@ class INA219:
 		return val
 
 	def ina219SetCalibration_32V_2A(self):
+		self.ina219_calValue = 4096
 		self.ina219_currentDivider_mA = 10  # Current LSB = 100uA per bit (1000/100 = 10)
 		self.ina219_powerDivider_mW = 2     # Power LSB = 1mW per bit (2/1)
-		
+
 		# Set Calibration register to 'Cal' calculated above	
-		bytes = [(0x1000 >> 8) & 0xFF, 0x1000 & 0xFF]
+		bytes = [(self.ina219_calValue >> 8) & 0xFF, self.ina219_calValue & 0xFF]
 		self.i2c.writeList(self.__INA219_REG_CALIBRATION, bytes)
 		
 		# Set Config register to take into account the settings above
@@ -144,6 +145,13 @@ class INA219:
 			return (result[0] << 8) | (result[1])
 
 	def getCurrent_raw(self):
+		# Sometimes a sharp load will reset the INA219, which will
+		# reset the cal register, meaning CURRENT and POWER will
+		# not be available ... avoid this by always setting a cal
+		# value even if it's an unfortunate extra step
+		bytes = [(self.ina219_calValue >> 8) & 0xFF, self.ina219_calValue & 0xFF]
+		self.i2c.writeList(self.__INA219_REG_CALIBRATION, bytes)
+		# Now we can safely read the CURRENT register!
 		result = self.i2c.readList(self.__INA219_REG_CURRENT,2)
 		if (result[0] >> 7 == 1):
 			testint = (result[0]*256 + result[1])
