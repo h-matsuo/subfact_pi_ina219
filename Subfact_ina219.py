@@ -242,14 +242,15 @@ class INA219:
 		else:
 			return (result[0] << 8) | (result[1])
 
-	def getPower_raw(self):
-		result = self.i2c.readList(self.__INA219_REG_POWER,2)
-		if (result[0] >> 7 == 1):
-			testint = (result[0]*256 + result[1])
-			othernew = self.twosToInt(testint, 16)
-			return othernew
-		else:
-			return (result[0] << 8) | (result[1])
+	# Never used in this branch
+	# def getPower_raw(self):
+	# 	result = self.i2c.readList(self.__INA219_REG_POWER,2)
+	# 	if (result[0] >> 7 == 1):
+	# 		testint = (result[0]*256 + result[1])
+	# 		othernew = self.twosToInt(testint, 16)
+	# 		return othernew
+	# 	else:
+	# 		return (result[0] << 8) | (result[1])
 
 	def getShuntVoltage_mV(self):
 		value = self.getShuntVoltage_raw()
@@ -264,7 +265,13 @@ class INA219:
 		valueDec /= self.ina219_currentDivider_mA
 		return valueDec
 		
-	def getPower_mW(self):
-		valueDec = self.getPower_raw()
-		valueDec /= self.ina219_powerDivider_mW
-		return valueDec
+	# Something's wrong with the value from this function;
+	# calculate power directly, not getting from INA219.
+	# def getPower_mW(self):
+	# 	valueDec = self.getPower_raw()
+	# 	valueDec /= self.ina219_powerDivider_mW
+	# 	return valueDec
+	def getPower_W(self):
+		current_A = self.getCurrent_mA() / 1000.0
+		bus_voltage_V = self.getBusVoltage_V()
+		return current_A * bus_voltage_V
