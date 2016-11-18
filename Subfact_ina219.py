@@ -250,13 +250,13 @@ class INA219:
 class INA219:
 
 	def ina219SetCalibration_RasPi3ModelB(self):
-		self.tmp = 10
+		pass
 
 	def getShuntVoltage_mV(self):
 		#value = self.getShuntVoltage_raw()
 		#return value * 0.01
 		return random.uniform(20,40)
-		
+
 	def getBusVoltage_V(self):
 		#value = self.getBusVoltage_raw()
 		#return value * 0.001
@@ -267,9 +267,9 @@ class INA219:
 		#valueDec /= self.ina219_currentDivider_mA
 		#return valueDec
 		return random.uniform(200,350)
-		
-	def getPower_mW(self):
+
+	def getPower_W(self):
 		#valueDec = self.getPower_raw()
 		#valueDec /= self.ina219_powerDivider_mW
 		#return valueDec
-		return random.uniform(80,200)
+		return random.uniform(0.9,2)
