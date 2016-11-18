@@ -99,9 +99,9 @@ class INA219:
 		self.i2c = Adafruit_I2C(address, debug=False)
 		self.address = address
 		self.debug = debug
-		
+
 		self.ina219SetCalibration_32V_2A()
-	
+
 	def twosToInt(self, val, len):
 		# Convert twos compliment to integer
 
@@ -112,20 +112,20 @@ class INA219:
 
 	def ina219SetCalibration_32V_2A(self):
 		self.ina219_calValue = 4096
-		self.ina219_currentDivider_mA = 10  # Current LSB = 100uA per bit (1000/100 = 10)
-		self.ina219_powerDivider_mW = 2     # Power LSB = 1mW per bit (2/1)
+		self.ina219_currentDivider_mA = 10	# Current LSB = 100uA per bit (1000/100 = 10)
+		self.ina219_powerDivider_mW = 2		# Power LSB = 1mW per bit (2/1)
 
 		# Set Calibration register to 'Cal' calculated above	
 		bytes = [(self.ina219_calValue >> 8) & 0xFF, self.ina219_calValue & 0xFF]
 		self.i2c.writeList(self.__INA219_REG_CALIBRATION, bytes)
-		
+
 		# Set Config register to take into account the settings above
 		config = self.__INA219_CONFIG_BVOLTAGERANGE_32V | \
 				 self.__INA219_CONFIG_GAIN_8_320MV | \
 				 self.__INA219_CONFIG_BADCRES_12BIT | \
 				 self.__INA219_CONFIG_SADCRES_12BIT_1S_532US | \
 				 self.__INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS
-		
+
 		bytes = [(config >> 8) & 0xFF, config & 0xFF]
 		self.i2c.writeList(self.__INA219_REG_CONFIG, bytes)
 
@@ -213,10 +213,10 @@ class INA219:
 
 	def getBusVoltage_raw(self):
 		result = self.i2c.readU16(self.__INA219_REG_BUSVOLTAGE)
-		
+
 		# Shift to the right 3 to drop CNVR and OVF and multiply by LSB
 		return (result >> 3) * 4
-		
+
 	def getShuntVoltage_raw(self):
 		result = self.i2c.readList(self.__INA219_REG_SHUNTVOLTAGE,2)
 		if (result[0] >> 7 == 1):
@@ -255,16 +255,16 @@ class INA219:
 	def getShuntVoltage_mV(self):
 		value = self.getShuntVoltage_raw()
 		return value * 0.01
-		
+
 	def getBusVoltage_V(self):
 		value = self.getBusVoltage_raw()
 		return value * 0.001
-		
+
 	def getCurrent_mA(self):
 		valueDec = self.getCurrent_raw()
 		valueDec /= self.ina219_currentDivider_mA
 		return valueDec
-		
+
 	# Something's wrong with the value from this function;
 	# calculate power directly, not getting from INA219.
 	# def getPower_mW(self):
